@@ -6,7 +6,7 @@ export default function HomePage() {
     <PageStructure>
       <SubContainer>
         <StyledBox href="/ingredients">View ingredients</StyledBox>
-        <StyledBox href="#">View recipes</StyledBox>
+        <StyledBox href="/recipes">View recipes</StyledBox>
       </SubContainer>
     </PageStructure>
   );

@@ -20,7 +20,7 @@ export default function Navigation() {
             <StyledLink href="/ingredients">Ingredients</StyledLink>
           </StyledNavListItem>
           <StyledNavListItem>
-            <StyledLink href="#">Recipes</StyledLink>
+            <StyledLink href="/recipes">Recipes</StyledLink>
           </StyledNavListItem>
         </StyledNavList>
       </StyledNavContainer>
