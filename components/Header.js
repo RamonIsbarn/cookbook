@@ -20,6 +20,7 @@ const StyledHeader = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 3px 10px #bbb;
 `;
 
 const StyledLink = styled(Link)`

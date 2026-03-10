@@ -17,7 +17,7 @@ export default function Navigation() {
       <StyledNavContainer $navOpen={navOpen}>
         <StyledNavList>
           <StyledNavListItem>
-            <StyledLink href="#">Ingredients</StyledLink>
+            <StyledLink href="/ingredients">Ingredients</StyledLink>
           </StyledNavListItem>
           <StyledNavListItem>
             <StyledLink href="#">Recipes</StyledLink>
@@ -46,7 +46,7 @@ const StyledNavContainer = styled.div`
   height: 100vh;
   top: 0;
   background-color: #ccc;
-  opacity: 0.7;
+  opacity: 0.95;
   display: flex;
   justify-content: center;
   align-items: center;
