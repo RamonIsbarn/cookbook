@@ -16,6 +16,7 @@ const StyledContainer = styled.div`
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
+  padding-bottom: 100px;
 `;
 
 const StyledBox = styled.div`
