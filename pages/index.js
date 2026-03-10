@@ -1,14 +1,14 @@
 import styled from "styled-components";
+import Link from "next/link";
+import { PageStructure, SubContainer } from "@/components/PageStructure";
 export default function HomePage() {
   return (
-    <StyledContainer>
-      <StyledBox>
-        <p>View ingredients</p>
-      </StyledBox>
-      <StyledBox>
-        <p>View recipes</p>
-      </StyledBox>
-    </StyledContainer>
+    <PageStructure>
+      <SubContainer>
+        <StyledBox href="/ingredients">View ingredients</StyledBox>
+        <StyledBox href="#">View recipes</StyledBox>
+      </SubContainer>
+    </PageStructure>
   );
 }
 const StyledContainer = styled.div`
@@ -16,9 +16,10 @@ const StyledContainer = styled.div`
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
+  padding-bottom: 100px;
 `;
 
-const StyledBox = styled.div`
+const StyledBox = styled(Link)`
   width: 50vw;
   aspect-ratio: 1;
   background-color: #ccc;
