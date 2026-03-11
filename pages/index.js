@@ -11,13 +11,6 @@ export default function HomePage() {
     </PageStructure>
   );
 }
-const StyledContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-  padding-bottom: 100px;
-`;
 
 const StyledBox = styled(Link)`
   width: 50vw;
