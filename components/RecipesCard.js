@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function RecipesCard({ name }) {
   return (
     <StyledContainer>
-      <StyledLink href="#">{name}</StyledLink>
+      <StyledLink href={"/recipes/" + name}>{name}</StyledLink>
     </StyledContainer>
   );
 }
