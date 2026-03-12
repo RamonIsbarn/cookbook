@@ -15,9 +15,11 @@ export default function HomePage() {
 const StyledBox = styled(Link)`
   width: 50vw;
   aspect-ratio: 1;
-  background-color: #ccc;
-  border-radius: 15px;
+  border-radius: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: #000;
+  box-shadow: 0 3px 10px #bbb;
+  text-decoration: none;
 `;
