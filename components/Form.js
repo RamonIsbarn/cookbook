@@ -4,7 +4,10 @@ import { useState } from "react";
 import { mutate } from "swr";
 import { StyledButton, StyledIconButton } from "./Button";
 
-export default function Form({ onCancel, defaultValues }) {
+export default function Form({ onCancel, defaultValues, formType }) {
+  defaultValues
+    ? null
+    : (defaultValues = { id: "", name: "", type: "", amount: "" });
   const [amountInStock, setAmountInStock] = useState(
     Number(defaultValues.amount)
   );
@@ -17,11 +20,21 @@ export default function Form({ onCancel, defaultValues }) {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
 
-    const response = await fetch(`/api/ingredients/${defaultValues.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...defaultValues, ...data }),
-    });
+    let response = null;
+    if (formType === "edit") {
+      response = await fetch(`/api/ingredients/${defaultValues.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...defaultValues, ...data }),
+      });
+    }
+    if (formType === "add") {
+      response = await fetch(`/api/ingredients/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...data, amount: 0 }),
+      });
+    }
 
     if (response.ok) {
       mutate(`/api/ingredients`);
@@ -43,119 +56,158 @@ export default function Form({ onCancel, defaultValues }) {
     <>
       <StyledOverlay />
       <StyledContainer>
-        <h3>Update {defaultValues.name}</h3>
+        <h3>
+          {formType === "edit"
+            ? `Update ${defaultValues.name}`
+            : "Add new Ingredient"}
+        </h3>
         <StyledForm onSubmit={handleSubmit}>
-          <StyledFieldset>
-            <StyledLabel htmlFor="amount">Amount</StyledLabel>
-            <StyledInput
-              type="number"
-              value={amountInStock}
-              readOnly
-              inert="true"
-              id="amount"
-              name="amount"
-            ></StyledInput>
-            <StyledButtonContainer>
-              <StyledAmountButton
-                type="button"
-                onClick={() => {
-                  setAmountInStock(amountInStock + 1);
-                }}
-              >
-                <Plus />
-              </StyledAmountButton>
-              <StyledAmountButton
-                type="button"
-                onClick={() => {
-                  setAmountInStock(amountInStock - 1);
-                }}
-              >
-                <Minus />
-              </StyledAmountButton>
-            </StyledButtonContainer>
-          </StyledFieldset>
-          <StyledFieldset>
+          {formType === "edit" ? (
             <>
-              <StyledLabel>Type</StyledLabel>
-              <StyledInput
-                type="text"
-                name="type"
-                value={ingredientType}
-                inert="true"
-                readOnly
-              ></StyledInput>
+              <StyledFieldset>
+                <StyledLabel htmlFor="amount">Amount</StyledLabel>
+                <StyledInput
+                  type="number"
+                  value={amountInStock}
+                  readOnly
+                  inert="true"
+                  id="amount"
+                  name="amount"
+                ></StyledInput>
+                <StyledButtonContainer>
+                  <StyledButton
+                    type="button"
+                    onClick={() => {
+                      setAmountInStock(amountInStock + 1);
+                    }}
+                  >
+                    <Plus />
+                  </StyledButton>
+                  <StyledButton
+                    type="button"
+                    onClick={() => {
+                      setAmountInStock(amountInStock - 1);
+                    }}
+                  >
+                    <Minus />
+                  </StyledButton>
+                </StyledButtonContainer>
+              </StyledFieldset>
+              <StyledFieldset>
+                <>
+                  <StyledLabel>Type</StyledLabel>
+                  <StyledInput
+                    type="text"
+                    name="type"
+                    value={ingredientType}
+                    inert="true"
+                    readOnly
+                  ></StyledInput>
+                </>
+                {isEditingType ? (
+                  <StyledPopUp>
+                    <StyledLabel htmlFor="type">Edit Type</StyledLabel>
+                    <StyledEditInput
+                      type="text"
+                      id="type"
+                      value={ingredientType}
+                      onChange={(event) =>
+                        setIngredientType(event.target.value)
+                      }
+                    ></StyledEditInput>
+                    <StyledButtonContainerCenter>
+                      <StyledButton
+                        type="button"
+                        onClick={() => {
+                          setIsEditingType(false);
+                          setIngredientType(defaultValues.type);
+                        }}
+                      >
+                        Cancel
+                      </StyledButton>
+                      <StyledButton
+                        type="button"
+                        onClick={() => {
+                          setIsEditingType(false);
+                        }}
+                        colored={true}
+                      >
+                        Save changes
+                      </StyledButton>
+                    </StyledButtonContainerCenter>
+                  </StyledPopUp>
+                ) : null}
+                <StyledButtonContainer>
+                  <StyledIconButton
+                    type="button"
+                    onClick={() => {
+                      setIsEditingType(true);
+                    }}
+                  >
+                    <SquarePen />
+                  </StyledIconButton>
+                </StyledButtonContainer>
+              </StyledFieldset>
+              {isDeleting ? (
+                <StyledPopUp>
+                  <p>Are you sure you want to delete {defaultValues.name}</p>
+                  <StyledButtonContainerCenter>
+                    <StyledButton
+                      onClick={() => {
+                        setIsDeleting(false);
+                      }}
+                    >
+                      Cancel
+                    </StyledButton>
+                    <StyledButton
+                      type="button"
+                      onClick={handleDelete}
+                      colored={true}
+                    >
+                      Confirm
+                    </StyledButton>
+                  </StyledButtonContainerCenter>
+                </StyledPopUp>
+              ) : (
+                <StyledDeleteButton
+                  onClick={() => {
+                    setIsDeleting(true);
+                  }}
+                >
+                  <Trash2 />
+                </StyledDeleteButton>
+              )}
             </>
-            {isEditingType ? (
-              <StyledPopUp>
-                <StyledLabel htmlFor="type">Edit Type</StyledLabel>
-                <StyledEditInput
+          ) : (
+            <>
+              <StyledTextFieldset>
+                <StyledLabel htmlFor="name">Name</StyledLabel>
+                <StyledTextInput
+                  type="text"
+                  id="name"
+                  name="name"
+                ></StyledTextInput>
+              </StyledTextFieldset>
+              <StyledTextFieldset>
+                <StyledLabel htmlFor="type">Type</StyledLabel>
+                <StyledTextInput
                   type="text"
                   id="type"
-                  value={ingredientType}
-                  onChange={(event) => setIngredientType(event.target.value)}
-                ></StyledEditInput>
-                <StyledButtonContainerCenter>
-                  <StyledButton
-                    type="button"
-                    onClick={() => {
-                      setIsEditingType(false);
-                      setIngredientType(defaultValues.type);
-                    }}
-                  >
-                    Cancel
-                  </StyledButton>
-                  <StyledButton
-                    type="button"
-                    onClick={() => {
-                      setIsEditingType(false);
-                    }}
-                  >
-                    Save changes
-                  </StyledButton>
-                </StyledButtonContainerCenter>
-              </StyledPopUp>
-            ) : null}
-            <StyledButtonContainer>
-              <StyledIconButton
-                type="button"
-                onClick={() => {
-                  setIsEditingType(true);
-                }}
-              >
-                <SquarePen />
-              </StyledIconButton>
-            </StyledButtonContainer>
-          </StyledFieldset>
+                  name="type"
+                ></StyledTextInput>
+              </StyledTextFieldset>
+            </>
+          )}
+
           <StyledFieldset>
             <StyledButtonContainerCenter>
               <StyledButton onClick={onCancel}>Cancel</StyledButton>
-              <StyledButton type="submit">Save changes</StyledButton>
+              <StyledButton type="submit" colored={true}>
+                {formType === "edit" ? "Save changes" : "Add new"}
+              </StyledButton>
             </StyledButtonContainerCenter>
           </StyledFieldset>
         </StyledForm>
-        {isDeleting ? (
-          <StyledPopUp>
-            <p>Are you sure you want to delete {defaultValues.name}</p>
-            <StyledButtonContainerCenter>
-              <StyledButton
-                onClick={() => {
-                  setIsDeleting(false);
-                }}
-              >
-                Cancel
-              </StyledButton>
-              <StyledButton onClick={handleDelete}>Confirm</StyledButton>
-            </StyledButtonContainerCenter>
-          </StyledPopUp>
-        ) : (
-          <StyledDeleteButton
-            onClick={() => {
-              setIsDeleting(true);
-            }}
-          >
-            <Trash2 />
-          </StyledDeleteButton>
-        )}
       </StyledContainer>
     </>
   );
@@ -196,6 +248,10 @@ const StyledFieldset = styled.fieldset`
   gap: 20px;
   align-items: center;
 `;
+const StyledTextFieldset = styled(StyledFieldset)`
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+`;
 const StyledDeleteButton = styled(StyledIconButton)`
   position: absolute;
   top: 20px;
@@ -207,18 +263,15 @@ const StyledInput = styled.input`
   width: 100%;
   font-size: 16px;
 `;
-const StyledEditInput = styled.input`
+const StyledTextInput = styled.input`
   width: 100%;
   font-size: 16px;
   padding: 20px;
   border-radius: 99px;
   border: 1px solid #000;
-  margin: 20px 0;
 `;
-const StyledAmountButton = styled(StyledButton)`
-  display: flex;
-  align-items: center;
-  width: fit-content;
+const StyledEditInput = styled(StyledTextInput)`
+  margin: 20px 0;
 `;
 const StyledLabel = styled.label`
   width: 100%;

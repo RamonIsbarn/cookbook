@@ -1,9 +1,17 @@
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function Navigation() {
   const [navOpen, setNavOpen] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (navOpen) {
+      setNavOpen(!navOpen);
+    }
+  }, [router.asPath]);
 
   return (
     <>
@@ -36,6 +44,9 @@ const StyledBurgerIcon = styled.button`
   font-size: 30px;
   cursor: pointer;
   z-index: 10;
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const StyledNavContainer = styled.div`
@@ -45,7 +56,7 @@ const StyledNavContainer = styled.div`
   width: 100vw;
   height: 100vh;
   top: 0;
-  background-color: #ccc;
+  background-color: #deb96f;
   opacity: 0.95;
   display: flex;
   justify-content: center;
@@ -67,4 +78,7 @@ const StyledLink = styled(Link)`
   text-decoration: none;
   color: #000;
   font-size: 20px;
+  &:hover {
+    opacity: 0.8;
+  }
 `;

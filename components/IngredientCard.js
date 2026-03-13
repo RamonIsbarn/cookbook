@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { SquarePen } from "lucide-react";
+import { StyledIconButton } from "./Button";
 
 export default function IngredientCard({ name, type, amount, onClick }) {
   return (
@@ -7,9 +8,9 @@ export default function IngredientCard({ name, type, amount, onClick }) {
       <p>{name}</p>
       <p>{type}</p>
       <p>{amount}</p>
-      <StyledEditButton onClick={onClick}>
+      <StyledIconButton onClick={onClick}>
         <SquarePen />
-      </StyledEditButton>
+      </StyledIconButton>
     </StyledContainer>
   );
 }
@@ -22,7 +23,7 @@ const StyledContainer = styled.div`
   box-shadow: 0 3px 10px #bbb;
 `;
 
-const StyledEditButton = styled.button`
+const StyledEditButton = styled(StyledIconButton)`
   background-color: #fff;
   border: none;
   cursor: pointer;

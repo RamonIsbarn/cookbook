@@ -1,14 +1,29 @@
 import styled from "styled-components";
 
-export const StyledButton = styled.button`
+export function StyledButton({ colored, children, onClick, type, className }) {
+  return (
+    <StyledRegularButton
+      $colored={colored}
+      onClick={onClick}
+      type={type}
+      className={className}
+    >
+      {children}
+    </StyledRegularButton>
+  );
+}
+
+const StyledRegularButton = styled.button`
   font-size: 16px;
   border-radius: 99px;
   border: none;
   padding: 20px;
   cursor: pointer;
-  background-color: #ddd;
+  background-color: ${({ $colored }) => ($colored ? "#deb96f" : "#ddd")};
+  display: flex;
+  align-items: center;
   &:hover {
-    background-color: #ccc;
+    background-color: ${({ $colored }) => ($colored ? "#ccaa66" : "#ccc")};
   }
 `;
 
@@ -16,6 +31,9 @@ export const StyledIconButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   &:hover {
     opacity: 0.8;
   }
