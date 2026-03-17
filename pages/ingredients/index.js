@@ -3,7 +3,7 @@ import useSWR from "swr";
 import IngredientCard from "@/components/IngredientCard";
 import styled from "styled-components";
 import { useState } from "react";
-import Form from "@/components/Form";
+import Form from "@/components/IngredientForm";
 import { StyledButton } from "@/components/Button";
 import { Plus } from "lucide-react";
 
