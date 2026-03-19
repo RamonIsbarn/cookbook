@@ -58,6 +58,7 @@ export default function RecipeDetailPage() {
         (unfilteredIngredient) =>
           unfilteredIngredient._id === ingredientObject.ingredient
       ).type,
+      _id: ingredientObject.ingredient,
     })
   );
 
@@ -72,15 +73,27 @@ export default function RecipeDetailPage() {
           <SquarePen />
         </StyledEditButton>
         <h3>Ingredients:</h3>
-        <ul>
+        <StyledList>
           {filteredIngredients.map((ingredient) => {
             return (
               <li key={ingredient.ingredient}>
-                {ingredient.amount} x {ingredient.type} {ingredient.ingredient}
+                {`${ingredient.amount} x ${ingredient.type} ${ingredient.ingredient} - `}
+                {unfilteredIngredients.find(
+                  (unfilteredIngredient) =>
+                    unfilteredIngredient._id === ingredient._id
+                ).amount >= ingredient.amount ? (
+                  <PositiveIngredientCount>
+                    enough in stock
+                  </PositiveIngredientCount>
+                ) : (
+                  <NegativeIngredientCount>
+                    not enough in stock
+                  </NegativeIngredientCount>
+                )}
               </li>
             );
           })}
-        </ul>
+        </StyledList>
         <h3>Recipe:</h3>
         <p>{currentRecipe.recipe}</p>
       </RecipeContainer>
@@ -109,4 +122,23 @@ const StyledEditButton = styled(StyledIconButton)`
   position: absolute;
   top: 20px;
   right: 20px;
+`;
+const PositiveIngredientCount = styled.span`
+  padding: 10px;
+  background-color: #8cde6f;
+  border-radius: 99px;
+  display: inline-block;
+`;
+const NegativeIngredientCount = styled.span`
+  padding: 10px;
+  background-color: #aaa;
+  border-radius: 99px;
+  display: inline-block;
+`;
+const StyledList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style-type: none;
+  padding-left: 0;
 `;
