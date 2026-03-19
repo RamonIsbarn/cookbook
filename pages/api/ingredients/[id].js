@@ -20,7 +20,7 @@ export default async function handler(request, response) {
       response.status(200).json(ingredientToUpdate);
       return;
     } catch (error) {
-      response.status(500).json({ status: "error updating flashcard" });
+      response.status(500).json({ status: "error updating ingredient" });
       return;
     }
   }
