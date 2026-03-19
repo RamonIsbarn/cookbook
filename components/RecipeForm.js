@@ -1,15 +1,38 @@
 import styled from "styled-components";
-import { Trash2, Plus, Minus, SquarePen, LucideX } from "lucide-react";
+import { Trash2, Plus, LucideX } from "lucide-react";
 import { useState } from "react";
 import { mutate } from "swr";
 import { StyledButton, StyledIconButton } from "./Button";
 import IngredientAmountForm from "./IngredientAmountForm";
 
-export default function RecipeForm({ onCancel, formType, ingredients }) {
-  const [ingredientTags, setIngredientTags] = useState([]);
+export default function RecipeForm({
+  onCancel,
+  formType,
+  ingredients,
+  defaultValues,
+}) {
+  const [ingredientTags, setIngredientTags] = useState(
+    formType === "edit"
+      ? defaultValues.ingredients.map((ingredient) => ({
+          ...ingredient,
+          _id: ingredient.ingredient,
+          name: ingredients.find(
+            (unsortedIngredient) =>
+              unsortedIngredient._id === ingredient.ingredient
+          ).name,
+          type: ingredients.find(
+            (unsortedIngredient) =>
+              unsortedIngredient._id === ingredient.ingredient
+          ).type,
+          amount: ingredient.amount,
+        }))
+      : []
+  );
+
   const [isEditingIngredients, setIsEditingIngredients] = useState(false);
   const [isEditingIngredientAmount, setIsEditingIngredientAmount] =
     useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -23,13 +46,30 @@ export default function RecipeForm({ onCancel, formType, ingredients }) {
     );
 
     let response = null;
+    if (formType === "edit") {
+      response = await fetch(`/api/recipes/${defaultValues._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...defaultValues, ...data }),
+      });
+    }
     if (formType === "add") {
       response = await fetch(`/api/recipes/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, amount: 0 }),
+        body: JSON.stringify({ ...data }),
       });
     }
+    if (response.ok) {
+      mutate(`/api/recipes`);
+      onCancel();
+    }
+  }
+
+  async function handleDelete() {
+    const response = await fetch(`/api/recipes/${defaultValues._id}`, {
+      method: "DELETE",
+    });
     if (response.ok) {
       mutate(`/api/recipes`);
       onCancel();
@@ -54,6 +94,7 @@ export default function RecipeForm({ onCancel, formType, ingredients }) {
                 id="name"
                 name="name"
                 required
+                defaultValue={formType === "edit" ? defaultValues.name : null}
               ></StyledTextInput>
             </StyledFieldset>
             <StyledFieldset>
@@ -136,6 +177,7 @@ export default function RecipeForm({ onCancel, formType, ingredients }) {
                 id="recipe"
                 name="recipe"
                 required
+                defaultValue={formType === "edit" ? defaultValues.recipe : null}
               ></StyledTextarea>
             </StyledFieldset>
           </>
@@ -148,6 +190,37 @@ export default function RecipeForm({ onCancel, formType, ingredients }) {
             </StyledButtonContainerCenter>
           </StyledFieldset>
         </StyledForm>
+        {formType === "edit" ? (
+          isDeleting ? (
+            <StyledPopUp>
+              <p>Are you sure you want to delete {defaultValues.name}</p>
+              <StyledButtonContainerCenter>
+                <StyledButton
+                  onClick={() => {
+                    setIsDeleting(false);
+                  }}
+                >
+                  Cancel
+                </StyledButton>
+                <StyledButton
+                  type="button"
+                  onClick={handleDelete}
+                  colored={true}
+                >
+                  Confirm
+                </StyledButton>
+              </StyledButtonContainerCenter>
+            </StyledPopUp>
+          ) : (
+            <StyledDeleteButton
+              onClick={() => {
+                setIsDeleting(true);
+              }}
+            >
+              <Trash2 />
+            </StyledDeleteButton>
+          )
+        ) : null}
       </StyledContainer>
     </>
   );
@@ -201,11 +274,13 @@ const StyledTextInput = styled.input`
 const StyledTextarea = styled.textarea`
   width: 100%;
   font-size: 16px;
-  padding: 20px;
   border-radius: 35px;
-  border: 1px solid #000;
+  padding: 10px;
+  border: 10px #fff solid;
+  outline: 1px solid #000;
   resize: vertical;
   font-family: "Roboto", sans-serif;
+  height: 180px;
 `;
 const StyledLabel = styled.label`
   display: block;
@@ -259,4 +334,9 @@ const StyledIngredient = styled(StyledIconButton)`
 const StyledIngredientContainer = styled.div`
   max-height: 300px;
   overflow: scroll;
+`;
+const StyledDeleteButton = styled(StyledIconButton)`
+  position: absolute;
+  top: 20px;
+  right: 20px;
 `;
