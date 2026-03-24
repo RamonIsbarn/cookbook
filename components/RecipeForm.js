@@ -1,80 +1,23 @@
 import styled from "styled-components";
 import { Trash2, Plus, LucideX } from "lucide-react";
 import { useState } from "react";
-import { mutate } from "swr";
 import { StyledButton, StyledIconButton } from "./Button";
 import IngredientAmountForm from "./IngredientAmountForm";
+import Dialog from "./Dialog";
 
 export default function RecipeForm({
   onCancel,
   formType,
   ingredients,
   defaultValues,
+  onSubmit,
+  ingredientTags,
+  setIngredientTags,
+  onDelete,
 }) {
-  const [ingredientTags, setIngredientTags] = useState(
-    formType === "edit"
-      ? defaultValues.ingredients.map((ingredient) => ({
-          ...ingredient,
-          _id: ingredient.ingredient,
-          name: ingredients.find(
-            (unsortedIngredient) =>
-              unsortedIngredient._id === ingredient.ingredient
-          ).name,
-          type: ingredients.find(
-            (unsortedIngredient) =>
-              unsortedIngredient._id === ingredient.ingredient
-          ).type,
-          amount: ingredient.amount,
-        }))
-      : []
-  );
-
-  const [isEditingIngredients, setIsEditingIngredients] = useState(false);
+  const [ingredientToAdd, setIngredientToAdd] = useState();
   const [isEditingIngredientAmount, setIsEditingIngredientAmount] =
     useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData);
-    data.ingredients = ingredientTags.map((ingredient) =>
-      Object.fromEntries([
-        ["ingredient", ingredient._id],
-        ["amount", ingredient.amount],
-      ])
-    );
-
-    let response = null;
-    if (formType === "edit") {
-      response = await fetch(`/api/recipes/${defaultValues._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...defaultValues, ...data }),
-      });
-    }
-    if (formType === "add") {
-      response = await fetch(`/api/recipes/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data }),
-      });
-    }
-    if (response.ok) {
-      mutate(`/api/recipes`);
-      onCancel();
-    }
-  }
-
-  async function handleDelete() {
-    const response = await fetch(`/api/recipes/${defaultValues._id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
-      mutate(`/api/recipes`);
-      onCancel();
-    }
-  }
 
   return (
     <>
@@ -85,7 +28,7 @@ export default function RecipeForm({
             ? `Update ${defaultValues.name}`
             : "Add new Recipe"}
         </h3>
-        <StyledForm onSubmit={handleSubmit}>
+        <StyledForm onSubmit={onSubmit}>
           <>
             <StyledFieldset>
               <StyledLabel htmlFor="name">Name</StyledLabel>
@@ -94,7 +37,7 @@ export default function RecipeForm({
                 id="name"
                 name="name"
                 required
-                defaultValue={formType === "edit" ? defaultValues.name : null}
+                defaultValue={formType === "edit" ? defaultValues.name : ""}
               ></StyledTextInput>
             </StyledFieldset>
             <StyledFieldset>
@@ -125,50 +68,51 @@ export default function RecipeForm({
                     </StyledIconButton>
                   </IngredientTag>
                 ))}
-                <StyledButton
-                  type="button"
-                  onClick={() => {
-                    setIsEditingIngredients(true);
-                  }}
-                  colored={true}
-                >
-                  <Plus />
-                </StyledButton>
-              </StyledTagContainer>
-              {isEditingIngredients ? (
-                <StyledPopUp>
+
+                <Dialog buttonText={<Plus />} noSubmit buttonBackground>
                   <StyledIngredientContainer>
                     {ingredients.map((ingredient) => (
-                      <StyledIngredient
-                        type="button"
+                      <StyledDialog
                         key={ingredient._id}
-                        onClick={() => {
+                        buttonText={ingredient.name}
+                        onSubmit={() => {
+                          setIngredientTags([
+                            ...ingredientTags.filter(
+                              (ingredient) =>
+                                ingredient._id !== ingredientToAdd._id
+                            ),
+                            ingredientToAdd,
+                          ]);
+                        }}
+                        onOpen={() => {
                           setIsEditingIngredientAmount([ingredient]);
+                          setIngredientToAdd({
+                            _id: ingredient._id,
+                            name: ingredient.name,
+                            type: ingredient.type,
+                            amount: ingredientTags.find(
+                              (ingredientTag) =>
+                                ingredientTag._id === ingredient._id
+                            )
+                              ? ingredientTags.find(
+                                  (ingredientTag) =>
+                                    ingredientTag._id === ingredient._id
+                                ).amount
+                              : 0,
+                          });
                         }}
                       >
-                        {ingredient.name}
-                      </StyledIngredient>
+                        <IngredientAmountForm
+                          ingredientTags={ingredientTags}
+                          ingredient={isEditingIngredientAmount}
+                          onClick={setIngredientToAdd}
+                          ingredientToAdd={ingredientToAdd}
+                        />
+                      </StyledDialog>
                     ))}
                   </StyledIngredientContainer>
-                  <StyledCancelButton
-                    onClick={() => {
-                      setIsEditingIngredients(false);
-                    }}
-                  >
-                    <LucideX />
-                  </StyledCancelButton>
-                </StyledPopUp>
-              ) : null}
-              {isEditingIngredientAmount ? (
-                <StyledPopUp>
-                  <IngredientAmountForm
-                    onClick={setIngredientTags}
-                    ingredientTags={ingredientTags}
-                    onCancel={setIsEditingIngredientAmount}
-                    ingredient={isEditingIngredientAmount}
-                  />
-                </StyledPopUp>
-              ) : null}
+                </Dialog>
+              </StyledTagContainer>
             </StyledFieldset>
             <StyledFieldset>
               <StyledLabel htmlFor="recipe">Recipe</StyledLabel>
@@ -177,7 +121,7 @@ export default function RecipeForm({
                 id="recipe"
                 name="recipe"
                 required
-                defaultValue={formType === "edit" ? defaultValues.recipe : null}
+                defaultValue={formType === "edit" ? defaultValues.recipe : ""}
               ></StyledTextarea>
             </StyledFieldset>
           </>
@@ -190,37 +134,11 @@ export default function RecipeForm({
             </StyledButtonContainerCenter>
           </StyledFieldset>
         </StyledForm>
-        {formType === "edit" ? (
-          isDeleting ? (
-            <StyledPopUp>
-              <p>Are you sure you want to delete {defaultValues.name}</p>
-              <StyledButtonContainerCenter>
-                <StyledButton
-                  onClick={() => {
-                    setIsDeleting(false);
-                  }}
-                >
-                  Cancel
-                </StyledButton>
-                <StyledButton
-                  type="button"
-                  onClick={handleDelete}
-                  colored={true}
-                >
-                  Confirm
-                </StyledButton>
-              </StyledButtonContainerCenter>
-            </StyledPopUp>
-          ) : (
-            <StyledDeleteButton
-              onClick={() => {
-                setIsDeleting(true);
-              }}
-            >
-              <Trash2 />
-            </StyledDeleteButton>
-          )
-        ) : null}
+        {formType === "edit" && (
+          <Dialog buttonText={<Trash2 />} onSubmit={onDelete}>
+            <p>Are you sure you want to delete {defaultValues.name}</p>
+          </Dialog>
+        )}
       </StyledContainer>
     </>
   );
@@ -335,8 +253,10 @@ const StyledIngredientContainer = styled.div`
   max-height: 300px;
   overflow: scroll;
 `;
-const StyledDeleteButton = styled(StyledIconButton)`
-  position: absolute;
-  top: 20px;
-  right: 20px;
+const StyledDialog = styled(Dialog)`
+  position: static;
+  font-size: 16px;
+  width: 100%;
+  justify-content: left;
+  padding: 10px;
 `;

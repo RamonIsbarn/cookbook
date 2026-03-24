@@ -7,6 +7,7 @@ import { StyledIconButton } from "@/components/Button";
 import { useState } from "react";
 import RecipeForm from "@/components/RecipeForm";
 import Link from "next/link";
+import { mutate } from "swr";
 
 export default function RecipeDetailPage() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function RecipeDetailPage() {
   } = useSWR(`/api/ingredients`);
 
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
+  const [ingredientTags, setIngredientTags] = useState();
 
   if (recipesError || ingredientserror) return <div>failed to load</div>;
   if (
@@ -36,6 +38,40 @@ export default function RecipeDetailPage() {
   const currentRecipe = recipes.filter(
     (fetchedRecipe) => fetchedRecipe.name === recipe
   )[0];
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    data.ingredients = ingredientTags.map((ingredient) =>
+      Object.fromEntries([
+        ["ingredient", ingredient._id],
+        ["amount", ingredient.amount],
+      ])
+    );
+
+    let response = null;
+
+    response = await fetch(`/api/recipes/${currentRecipe._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...currentRecipe, ...data }),
+    });
+
+    if (response.ok) {
+      mutate(`/api/recipes`);
+      setIsEditingRecipe(false);
+    }
+  }
+
+  async function handleDelete() {
+    const response = await fetch(`/api/recipes/${currentRecipe._id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      mutate(`/api/recipes`);
+    }
+  }
 
   if (!currentRecipe) {
     return (
@@ -68,6 +104,21 @@ export default function RecipeDetailPage() {
         <StyledEditButton
           onClick={() => {
             setIsEditingRecipe(true);
+            setIngredientTags(
+              currentRecipe.ingredients.map((ingredient) => ({
+                ...ingredient,
+                _id: ingredient.ingredient,
+                name: unfilteredIngredients.find(
+                  (unsortedIngredient) =>
+                    unsortedIngredient._id === ingredient.ingredient
+                ).name,
+                type: unfilteredIngredients.find(
+                  (unsortedIngredient) =>
+                    unsortedIngredient._id === ingredient.ingredient
+                ).type,
+                amount: ingredient.amount,
+              }))
+            );
           }}
         >
           <SquarePen />
@@ -97,7 +148,7 @@ export default function RecipeDetailPage() {
         <h3>Recipe:</h3>
         <p>{currentRecipe.recipe}</p>
       </RecipeContainer>
-      {isEditingRecipe ? (
+      {isEditingRecipe && (
         <RecipeForm
           onCancel={() => {
             setIsEditingRecipe(false);
@@ -105,8 +156,12 @@ export default function RecipeDetailPage() {
           formType="edit"
           ingredients={unfilteredIngredients}
           defaultValues={currentRecipe}
+          onDelete={handleDelete}
+          onSubmit={handleSubmit}
+          ingredientTags={ingredientTags}
+          setIngredientTags={setIngredientTags}
         />
-      ) : null}
+      )}
     </PageStructure>
   );
 }

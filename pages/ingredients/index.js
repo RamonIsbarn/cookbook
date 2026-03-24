@@ -6,6 +6,7 @@ import { useState } from "react";
 import Form from "@/components/IngredientForm";
 import { StyledButton } from "@/components/Button";
 import { Plus } from "lucide-react";
+import { mutate } from "swr";
 
 export default function IngredientsList() {
   const { data: ingredients, isLoading, error } = useSWR(`/api/ingredients`);
@@ -15,18 +16,68 @@ export default function IngredientsList() {
   if (error) return <div>failed to load</div>;
   if (isLoading) return <div>loading...</div>;
 
+  async function handleAdd(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+
+    let response = null;
+
+    response = await fetch(`/api/ingredients/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, amount: 0 }),
+    });
+
+    if (response.ok) {
+      mutate(`/api/ingredients`);
+      setIsEditing(false);
+    }
+  }
+
+  async function handleEdit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+
+    let response = null;
+
+    response = await fetch(`/api/ingredients/${isEditing.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...isEditing, ...data }),
+    });
+
+    if (response.ok) {
+      mutate(`/api/ingredients`);
+      setIsEditing(false);
+    }
+  }
+
+  async function handleDelete() {
+    const response = await fetch(`/api/ingredients/${isEditing.id}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      mutate(`/api/ingredients`);
+      setIsEditing(false);
+    }
+  }
+
   return (
     <>
       <PageStructure headline="Ingredients">
-        {isEditing ? (
+        {isEditing && (
           <Form
             onCancel={() => {
               setIsEditing(false);
             }}
             defaultValues={isEditing}
             formType="edit"
+            onSubmit={handleEdit}
+            onDelete={handleDelete}
           ></Form>
-        ) : null}
+        )}
         <IngredientsContainer>
           {ingredients.map((ingredient) => {
             return (
@@ -55,14 +106,15 @@ export default function IngredientsList() {
         >
           <Plus />
         </StyledAddButton>
-        {isAdding ? (
+        {isAdding && (
           <Form
             onCancel={() => {
               setIsAdding(false);
             }}
             formType="add"
+            onSubmit={handleAdd}
           ></Form>
-        ) : null}
+        )}
       </PageStructure>
     </>
   );
