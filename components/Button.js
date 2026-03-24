@@ -34,7 +34,9 @@ export const StyledIconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: auto;
+  opacity: 0.7;
   &:hover {
-    opacity: 0.8;
+    opacity: 1;
   }
 `;

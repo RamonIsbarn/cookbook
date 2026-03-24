@@ -5,7 +5,9 @@ import styled from "styled-components";
 import RecipeForm from "@/components/RecipeForm";
 import { useState } from "react";
 import { StyledButton, StyledIconButton } from "@/components/Button";
-import { Plus, SlidersHorizontal } from "lucide-react";
+import { Plus, SlidersHorizontal, Square, SquareCheck } from "lucide-react";
+import { mutate } from "swr";
+import Dialog from "@/components/Dialog";
 
 export default function RecipesList() {
   const { data: recipes, isLoading, error } = useSWR(`/api/recipes`);
@@ -15,29 +17,72 @@ export default function RecipesList() {
     ingredientserror,
   } = useSWR(`/api/ingredients`);
   const [isAdding, setIsAdding] = useState(false);
-  const [recipesFilter, setRecipesFilter] = useState("all");
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [recipesFilter, setRecipesFilter] = useState(false);
+  const [ingredientTags, setIngredientTags] = useState([]);
 
   if (error || ingredientserror) return <div>failed to load</div>;
-  if (isLoading || ingredientsIsLoading) return <div>loading...</div>;
+  if (isLoading || ingredientsIsLoading || !ingredients)
+    return <div>loading...</div>;
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    data.ingredients = ingredientTags.map((ingredient) =>
+      Object.fromEntries([
+        ["ingredient", ingredient._id],
+        ["amount", ingredient.amount],
+      ])
+    );
+
+    let response = null;
+
+    response = await fetch(`/api/recipes/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data }),
+    });
+
+    if (response.ok) {
+      mutate(`/api/recipes`);
+      setIsAdding(false);
+    }
+  }
+
+  function filterRecipes(recipe) {
+    if (
+      recipe.ingredients.every(
+        (recipeIngredient) =>
+          ingredients.find(
+            (unfilteredIngredient) =>
+              unfilteredIngredient._id === recipeIngredient.ingredient
+          ).amount <= recipeIngredient.amount
+      )
+    ) {
+      return recipe;
+    }
+  }
+
+  const filteredRecipes = recipesFilter
+    ? recipes.filter(filterRecipes)
+    : recipes;
 
   return (
     <>
       <PageStructure headline="Recipes">
-        <StyledFilterButton
-          onClick={() => {
-            setIsFiltering(true);
-          }}
-        >
-          <SlidersHorizontal />
-        </StyledFilterButton>
-        {isFiltering ? (
-          <StyledPopUp>
-            <h3>test</h3>
-          </StyledPopUp>
-        ) : null}
+        <StyledDialog buttonText={<SlidersHorizontal />} noSubmit>
+          <h3>Filter recipes</h3>
+          <StyledFilterButton
+            onClick={() => {
+              setRecipesFilter(!recipesFilter);
+            }}
+          >
+            {recipesFilter ? <SquareCheck /> : <Square />} Only show available
+            recipes
+          </StyledFilterButton>
+        </StyledDialog>
         <RecipesContainer>
-          {recipes.map((recipe) => {
+          {filteredRecipes.map((recipe) => {
             return <RecipesCard key={recipe._id} name={recipe.name} />;
           })}
         </RecipesContainer>
@@ -49,15 +94,18 @@ export default function RecipesList() {
         >
           <Plus />
         </StyledAddButton>
-        {isAdding ? (
+        {isAdding && (
           <RecipeForm
             onCancel={() => {
               setIsAdding(false);
             }}
             formType="add"
             ingredients={ingredients}
+            onSubmit={handleSubmit}
+            ingredientTags={ingredientTags}
+            setIngredientTags={setIngredientTags}
           ></RecipeForm>
-        ) : null}
+        )}
       </PageStructure>
     </>
   );
@@ -74,19 +122,10 @@ const StyledAddButton = styled(StyledButton)`
   bottom: 100px;
 `;
 const StyledFilterButton = styled(StyledIconButton)`
-  position: absolute;
-  top: 120px;
-  right: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 5px;
 `;
-const StyledPopUp = styled.div`
-  position: absolute;
-  z-index: 20;
-  background-color: #fff;
-  border-radius: 20px;
-  box-shadow: 0 3px 10px #bbb;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 85vw;
-  padding: 20px;
-  text-align: center;
+const StyledDialog = styled(Dialog)`
+  top: 120px;
 `;

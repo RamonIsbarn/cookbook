@@ -1,11 +1,23 @@
 import styled from "styled-components";
 import { StyledButton, StyledIconButton } from "./Button";
 import { useState } from "react";
+import { LucideX } from "lucide-react";
 
-export default function Dialog({ children, onSubmit, buttonText, position }) {
+export default function Dialog({
+  children,
+  className,
+  onSubmit,
+  onOpen,
+  buttonText,
+  cancelText,
+  confirmText,
+  noSubmit,
+  buttonBackground,
+}) {
   const [isVisible, setIsVisible] = useState(false);
 
   function handleToggle() {
+    onOpen && onOpen();
     setIsVisible(true);
   }
 
@@ -13,28 +25,56 @@ export default function Dialog({ children, onSubmit, buttonText, position }) {
     setIsVisible(false);
   }
   function handleSubmit() {
-    onSubmit();
+    onSubmit && onSubmit();
     setIsVisible(false);
   }
 
   return (
     <>
-      <StyledDialogButton onClick={handleToggle} $position={position}>
-        {buttonText}
-      </StyledDialogButton>
-      {isVisible ? (
-        <StyledPopUp>
-          {children}
-          <StyledButtonContainerCenter>
-            <StyledButton type="button" onClick={handleCancel}>
-              Cancel
-            </StyledButton>
-            <StyledButton type="button" onClick={handleSubmit} colored={true}>
-              Confirm
-            </StyledButton>
-          </StyledButtonContainerCenter>
-        </StyledPopUp>
-      ) : null}
+      {buttonBackground ? (
+        <StyledButton
+          className={className}
+          onClick={handleToggle}
+          type="button"
+          colored={true}
+        >
+          {buttonText}
+        </StyledButton>
+      ) : (
+        <StyledDialogButton
+          className={className}
+          onClick={handleToggle}
+          type="button"
+        >
+          {buttonText}
+        </StyledDialogButton>
+      )}
+      {isVisible && (
+        <>
+          <StyledOverlay onClick={handleCancel} />
+          <StyledPopUp>
+            {children}
+            {noSubmit ? (
+              <StyledDialogButton onClick={handleCancel}>
+                <LucideX />
+              </StyledDialogButton>
+            ) : (
+              <StyledButtonContainer>
+                <StyledButton type="button" onClick={handleCancel}>
+                  {cancelText ? cancelText : "Cancel"}
+                </StyledButton>
+                <StyledButton
+                  type="button"
+                  onClick={handleSubmit}
+                  colored={true}
+                >
+                  {confirmText ? confirmText : "Confirm"}
+                </StyledButton>
+              </StyledButtonContainer>
+            )}
+          </StyledPopUp>
+        </>
+      )}
     </>
   );
 }
@@ -44,9 +84,9 @@ const StyledPopUp = styled.div`
   z-index: 20;
   background-color: #fff;
   border-radius: 20px;
-  box-shadow: 0 3px 10px #bbb;
   top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 85vw;
   padding: 20px;
   text-align: center;
@@ -57,13 +97,21 @@ const StyledButtonContainer = styled.div`
   display: flex;
   justify-content: right;
   gap: 10px;
-`;
-const StyledButtonContainerCenter = styled(StyledButtonContainer)`
   justify-content: center;
 `;
 const StyledDialogButton = styled(StyledIconButton)`
-  position: ${({ $position }) =>
-    $position === "top-right" ? "absolute" : "static"};
-  top: ${({ $position }) => ($position === "top-right" ? "20px" : "auto")};
-  right: ${({ $position }) => ($position === "top-right" ? "20px" : "auto")};
+  position: absolute;
+  top: 20px;
+  right: 20px;
+`;
+const StyledOverlay = styled.button`
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  border: none;
 `;

@@ -4,7 +4,7 @@ export function PageStructure({ headline, children }) {
   return (
     <>
       <ContentWrapper>
-        {headline ? <h2>{headline}</h2> : null}
+        {headline && <h2>{headline}</h2>}
         {children}
       </ContentWrapper>
     </>

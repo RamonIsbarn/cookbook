@@ -3,54 +3,22 @@ import { Trash2, Plus, Minus, SquarePen } from "lucide-react";
 import { useState } from "react";
 import { mutate } from "swr";
 import { StyledButton, StyledIconButton } from "./Button";
+import Dialog from "./Dialog";
 
-export default function Form({ onCancel, defaultValues, formType }) {
-  defaultValues
-    ? null
-    : (defaultValues = { id: "", name: "", type: "", amount: "" });
+export default function Form({
+  onCancel,
+  defaultValues,
+  formType,
+  onDelete,
+  onSubmit,
+}) {
+  !defaultValues &&
+    (defaultValues = { id: "", name: "", type: "", amount: "" });
   const [amountInStock, setAmountInStock] = useState(
     Number(defaultValues.amount)
   );
   const [isEditingType, setIsEditingType] = useState(false);
   const [ingredientType, setIngredientType] = useState(defaultValues.type);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData);
-
-    let response = null;
-    if (formType === "edit") {
-      response = await fetch(`/api/ingredients/${defaultValues.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...defaultValues, ...data }),
-      });
-    }
-    if (formType === "add") {
-      response = await fetch(`/api/ingredients/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, amount: 0 }),
-      });
-    }
-
-    if (response.ok) {
-      mutate(`/api/ingredients`);
-      onCancel();
-    }
-  }
-
-  async function handleDelete() {
-    const response = await fetch(`/api/ingredients/${defaultValues.id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
-      mutate(`/api/ingredients`);
-      onCancel();
-    }
-  }
 
   return (
     <>
@@ -61,7 +29,7 @@ export default function Form({ onCancel, defaultValues, formType }) {
             ? `Update ${defaultValues.name}`
             : "Add new Ingredient"}
         </h3>
-        <StyledForm onSubmit={handleSubmit}>
+        <StyledForm onSubmit={onSubmit}>
           {formType === "edit" ? (
             <>
               <StyledFieldset>
@@ -104,7 +72,7 @@ export default function Form({ onCancel, defaultValues, formType }) {
                     readOnly
                   ></StyledInput>
                 </>
-                {isEditingType ? (
+                {isEditingType && (
                   <StyledPopUp>
                     <StyledLabel htmlFor="type">Edit Type</StyledLabel>
                     <StyledEditInput
@@ -136,7 +104,7 @@ export default function Form({ onCancel, defaultValues, formType }) {
                       </StyledButton>
                     </StyledButtonContainerCenter>
                   </StyledPopUp>
-                ) : null}
+                )}
                 <StyledButtonContainer>
                   <StyledIconButton
                     type="button"
@@ -148,35 +116,9 @@ export default function Form({ onCancel, defaultValues, formType }) {
                   </StyledIconButton>
                 </StyledButtonContainer>
               </StyledFieldset>
-              {isDeleting ? (
-                <StyledPopUp>
-                  <p>Are you sure you want to delete {defaultValues.name}</p>
-                  <StyledButtonContainerCenter>
-                    <StyledButton
-                      onClick={() => {
-                        setIsDeleting(false);
-                      }}
-                    >
-                      Cancel
-                    </StyledButton>
-                    <StyledButton
-                      type="button"
-                      onClick={handleDelete}
-                      colored={true}
-                    >
-                      Confirm
-                    </StyledButton>
-                  </StyledButtonContainerCenter>
-                </StyledPopUp>
-              ) : (
-                <StyledDeleteButton
-                  onClick={() => {
-                    setIsDeleting(true);
-                  }}
-                >
-                  <Trash2 />
-                </StyledDeleteButton>
-              )}
+              <Dialog buttonText={<Trash2 />} onSubmit={onDelete}>
+                <p>Are you sure you want to delete {defaultValues.name}</p>
+              </Dialog>
             </>
           ) : (
             <>
