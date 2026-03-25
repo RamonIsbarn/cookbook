@@ -8,6 +8,7 @@ import { StyledButton, StyledIconButton } from "@/components/Button";
 import { Plus, SlidersHorizontal, Square, SquareCheck } from "lucide-react";
 import { mutate } from "swr";
 import Dialog from "@/components/Dialog";
+import { useSession } from "next-auth/react";
 
 export default function RecipesList() {
   const { data: recipes, isLoading, error } = useSWR(`/api/recipes`);
@@ -19,6 +20,7 @@ export default function RecipesList() {
   const [isAdding, setIsAdding] = useState(false);
   const [recipesFilter, setRecipesFilter] = useState(false);
   const [ingredientTags, setIngredientTags] = useState([]);
+  const { data: session } = useSession();
 
   if (error || ingredientserror) return <div>failed to load</div>;
   if (isLoading || ingredientsIsLoading || !ingredients)
@@ -86,14 +88,16 @@ export default function RecipesList() {
             return <RecipesCard key={recipe._id} name={recipe.name} />;
           })}
         </RecipesContainer>
-        <StyledAddButton
-          onClick={() => {
-            setIsAdding(true);
-          }}
-          colored={true}
-        >
-          <Plus />
-        </StyledAddButton>
+        {session && (
+          <StyledAddButton
+            onClick={() => {
+              setIsAdding(true);
+            }}
+            colored={true}
+          >
+            <Plus />
+          </StyledAddButton>
+        )}
         {isAdding && (
           <RecipeForm
             onCancel={() => {

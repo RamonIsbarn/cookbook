@@ -7,11 +7,13 @@ import Form from "@/components/IngredientForm";
 import { StyledButton } from "@/components/Button";
 import { Plus } from "lucide-react";
 import { mutate } from "swr";
+import { useSession } from "next-auth/react";
 
 export default function IngredientsList() {
   const { data: ingredients, isLoading, error } = useSWR(`/api/ingredients`);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const { data: session } = useSession();
 
   if (error) return <div>failed to load</div>;
   if (isLoading) return <div>loading...</div>;
@@ -98,14 +100,16 @@ export default function IngredientsList() {
             );
           })}
         </IngredientsContainer>
-        <StyledAddButton
-          onClick={() => {
-            setIsAdding(true);
-          }}
-          colored={true}
-        >
-          <Plus />
-        </StyledAddButton>
+        {session && (
+          <StyledAddButton
+            onClick={() => {
+              setIsAdding(true);
+            }}
+            colored={true}
+          >
+            <Plus />
+          </StyledAddButton>
+        )}
         {isAdding && (
           <Form
             onCancel={() => {

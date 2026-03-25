@@ -8,6 +8,7 @@ import { useState } from "react";
 import RecipeForm from "@/components/RecipeForm";
 import Link from "next/link";
 import { mutate } from "swr";
+import { useSession } from "next-auth/react";
 
 export default function RecipeDetailPage() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function RecipeDetailPage() {
     ingredientsIsLoading,
     ingredientserror,
   } = useSWR(`/api/ingredients`);
+
+  const { data: session } = useSession();
 
   const [isEditingRecipe, setIsEditingRecipe] = useState(false);
   const [ingredientTags, setIngredientTags] = useState();
@@ -101,28 +104,30 @@ export default function RecipeDetailPage() {
   return (
     <PageStructure headline={recipe}>
       <RecipeContainer>
-        <StyledEditButton
-          onClick={() => {
-            setIsEditingRecipe(true);
-            setIngredientTags(
-              currentRecipe.ingredients.map((ingredient) => ({
-                ...ingredient,
-                _id: ingredient.ingredient,
-                name: unfilteredIngredients.find(
-                  (unsortedIngredient) =>
-                    unsortedIngredient._id === ingredient.ingredient
-                ).name,
-                type: unfilteredIngredients.find(
-                  (unsortedIngredient) =>
-                    unsortedIngredient._id === ingredient.ingredient
-                ).type,
-                amount: ingredient.amount,
-              }))
-            );
-          }}
-        >
-          <SquarePen />
-        </StyledEditButton>
+        {session && (
+          <StyledEditButton
+            onClick={() => {
+              setIsEditingRecipe(true);
+              setIngredientTags(
+                currentRecipe.ingredients.map((ingredient) => ({
+                  ...ingredient,
+                  _id: ingredient.ingredient,
+                  name: unfilteredIngredients.find(
+                    (unsortedIngredient) =>
+                      unsortedIngredient._id === ingredient.ingredient
+                  ).name,
+                  type: unfilteredIngredients.find(
+                    (unsortedIngredient) =>
+                      unsortedIngredient._id === ingredient.ingredient
+                  ).type,
+                  amount: ingredient.amount,
+                }))
+              );
+            }}
+          >
+            <SquarePen />
+          </StyledEditButton>
+        )}
         <h3>Ingredients:</h3>
         <StyledList>
           {filteredIngredients.map((ingredient) => {
