@@ -163,7 +163,7 @@ export default function RecipeDetailPage() {
           })}
         </StyledList>
         <h3>Recipe:</h3>
-        <p>{currentRecipe.recipe}</p>
+        <StyledParagraph>{currentRecipe.recipe}</StyledParagraph>
       </RecipeContainer>
       {isEditingRecipe && (
         <RecipeForm
@@ -213,4 +213,7 @@ const StyledList = styled.ul`
   gap: 10px;
   list-style-type: none;
   padding-left: 0;
+`;
+const StyledParagraph = styled.p`
+  white-space: pre-wrap;
 `;
