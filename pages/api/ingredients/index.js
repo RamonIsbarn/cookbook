@@ -2,14 +2,22 @@ import dbConnect from "@/db/connect";
 import Ingredient from "@/db/models/Ingredient";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
+import { getToken } from "next-auth/jwt";
 
 export default async function handler(request, response) {
   const session = await getServerSession(request, response, authOptions);
+  const token = await getToken({ req: request });
+  const userId = token?.sub;
   await dbConnect();
 
   if (request.method === "GET") {
-    const ingredients = await Ingredient.find();
-    return response.status(200).json(ingredients);
+    if (session) {
+      const ingredients = await Ingredient.find({ owner: userId });
+      return response.status(200).json(ingredients);
+    } else {
+      const ingredients = await Ingredient.find({ owner: "default" });
+      return response.status(200).json(ingredients);
+    }
   }
 
   if (request.method === "POST") {
@@ -18,7 +26,10 @@ export default async function handler(request, response) {
         return response.status(401).json({ status: "Not authorized" });
       }
       const ingredientData = request.body;
-      await Ingredient.create(ingredientData);
+      await Ingredient.create({
+        ...ingredientData,
+        owner: userId,
+      });
 
       response.status(201).json({ status: "ingredient added" });
     } catch (error) {

@@ -86,8 +86,14 @@ export default function RecipeDetailPage() {
     );
   }
 
-  const filteredIngredients = [...currentRecipe.ingredients].map(
-    (ingredientObject) => ({
+  const filteredIngredients = currentRecipe.ingredients
+    .filter((ingredientObject) =>
+      unfilteredIngredients.find(
+        (unfilteredIngredient) =>
+          unfilteredIngredient._id === ingredientObject.ingredient
+      )
+    )
+    .map((ingredientObject) => ({
       ...ingredientObject,
       ingredient: unfilteredIngredients.find(
         (unfilteredIngredient) =>
@@ -98,8 +104,7 @@ export default function RecipeDetailPage() {
           unfilteredIngredient._id === ingredientObject.ingredient
       ).type,
       _id: ingredientObject.ingredient,
-    })
-  );
+    }));
 
   return (
     <PageStructure headline={recipe}>
@@ -109,19 +114,26 @@ export default function RecipeDetailPage() {
             onClick={() => {
               setIsEditingRecipe(true);
               setIngredientTags(
-                currentRecipe.ingredients.map((ingredient) => ({
-                  ...ingredient,
-                  _id: ingredient.ingredient,
-                  name: unfilteredIngredients.find(
-                    (unsortedIngredient) =>
-                      unsortedIngredient._id === ingredient.ingredient
-                  ).name,
-                  type: unfilteredIngredients.find(
-                    (unsortedIngredient) =>
-                      unsortedIngredient._id === ingredient.ingredient
-                  ).type,
-                  amount: ingredient.amount,
-                }))
+                currentRecipe.ingredients
+                  .filter((ingredientObject) =>
+                    unfilteredIngredients.find(
+                      (unfilteredIngredient) =>
+                        unfilteredIngredient._id === ingredientObject.ingredient
+                    )
+                  )
+                  .map((ingredient) => ({
+                    ...ingredient,
+                    _id: ingredient.ingredient,
+                    name: unfilteredIngredients.find(
+                      (unsortedIngredient) =>
+                        unsortedIngredient._id === ingredient.ingredient
+                    ).name,
+                    type: unfilteredIngredients.find(
+                      (unsortedIngredient) =>
+                        unsortedIngredient._id === ingredient.ingredient
+                    ).type,
+                    amount: ingredient.amount,
+                  }))
               );
             }}
           >

@@ -84,9 +84,13 @@ export default function RecipesList() {
           </StyledFilterButton>
         </StyledDialog>
         <RecipesContainer>
-          {filteredRecipes.map((recipe) => {
-            return <RecipesCard key={recipe._id} name={recipe.name} />;
-          })}
+          {filteredRecipes.length === 0 ? (
+            <p>No recipes available yet</p>
+          ) : (
+            filteredRecipes.map((recipe) => {
+              return <RecipesCard key={recipe._id} name={recipe.name} />;
+            })
+          )}
         </RecipesContainer>
         {session && (
           <StyledAddButton
