@@ -45,14 +45,42 @@ export default function RecipeForm({
               <StyledTagContainer>
                 {ingredientTags.map((ingredient) => (
                   <IngredientTag key={ingredient._id}>
-                    <StyledIconButton
-                      type="button"
-                      onClick={() => {
+                    <StyledTagDialog
+                      buttonText={`${ingredient.name} x ${ingredient.amount}`}
+                      onSubmit={() => {
+                        setIngredientTags([
+                          ...ingredientTags.filter(
+                            (ingredient) =>
+                              ingredient._id !== ingredientToAdd._id
+                          ),
+                          ingredientToAdd,
+                        ]);
+                      }}
+                      onOpen={() => {
                         setIsEditingIngredientAmount([ingredient]);
+                        setIngredientToAdd({
+                          _id: ingredient._id,
+                          name: ingredient.name,
+                          type: ingredient.type,
+                          amount: ingredientTags.find(
+                            (ingredientTag) =>
+                              ingredientTag._id === ingredient._id
+                          )
+                            ? ingredientTags.find(
+                                (ingredientTag) =>
+                                  ingredientTag._id === ingredient._id
+                              ).amount
+                            : 0,
+                        });
                       }}
                     >
-                      {ingredient.name} x {ingredient.amount}
-                    </StyledIconButton>
+                      <IngredientAmountForm
+                        ingredientTags={ingredientTags}
+                        ingredient={isEditingIngredientAmount}
+                        onClick={setIngredientToAdd}
+                        ingredientToAdd={ingredientToAdd}
+                      />
+                    </StyledTagDialog>
                     <StyledIconButton
                       type="button"
                       onClick={() => {
@@ -259,4 +287,7 @@ const StyledDialog = styled(Dialog)`
   width: 100%;
   justify-content: left;
   padding: 10px;
+`;
+const StyledTagDialog = styled(Dialog)`
+  position: static;
 `;

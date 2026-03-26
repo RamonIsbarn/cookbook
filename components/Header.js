@@ -1,11 +1,13 @@
 import styled from "styled-components";
 import Link from "next/link";
 import Navigation from "./Navigation";
+import LoginButton from "./LoginButton";
 
 export default function Header() {
   return (
     <>
       <StyledHeader>
+        <LoginButton />
         <StyledLink href="/">CookBook</StyledLink>
         <Navigation />
       </StyledHeader>

@@ -7,11 +7,13 @@ import Form from "@/components/IngredientForm";
 import { StyledButton } from "@/components/Button";
 import { Plus } from "lucide-react";
 import { mutate } from "swr";
+import { useSession } from "next-auth/react";
 
 export default function IngredientsList() {
   const { data: ingredients, isLoading, error } = useSWR(`/api/ingredients`);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const { data: session } = useSession();
 
   if (error) return <div>failed to load</div>;
   if (isLoading) return <div>loading...</div>;
@@ -32,6 +34,7 @@ export default function IngredientsList() {
     if (response.ok) {
       mutate(`/api/ingredients`);
       setIsEditing(false);
+      setIsAdding(false);
     }
   }
 
@@ -79,33 +82,39 @@ export default function IngredientsList() {
           ></Form>
         )}
         <IngredientsContainer>
-          {ingredients.map((ingredient) => {
-            return (
-              <IngredientCard
-                key={ingredient._id}
-                name={ingredient.name}
-                type={ingredient.type}
-                amount={ingredient.amount}
-                onClick={() => {
-                  setIsEditing({
-                    id: ingredient._id,
-                    name: ingredient.name,
-                    type: ingredient.type,
-                    amount: ingredient.amount,
-                  });
-                }}
-              />
-            );
-          })}
+          {ingredients.length === 0 ? (
+            <p>No ingredients available yet</p>
+          ) : (
+            ingredients.map((ingredient) => {
+              return (
+                <IngredientCard
+                  key={ingredient._id}
+                  name={ingredient.name}
+                  type={ingredient.type}
+                  amount={ingredient.amount}
+                  onClick={() => {
+                    setIsEditing({
+                      id: ingredient._id,
+                      name: ingredient.name,
+                      type: ingredient.type,
+                      amount: ingredient.amount,
+                    });
+                  }}
+                />
+              );
+            })
+          )}
         </IngredientsContainer>
-        <StyledAddButton
-          onClick={() => {
-            setIsAdding(true);
-          }}
-          colored={true}
-        >
-          <Plus />
-        </StyledAddButton>
+        {session && (
+          <StyledAddButton
+            onClick={() => {
+              setIsAdding(true);
+            }}
+            colored={true}
+          >
+            <Plus />
+          </StyledAddButton>
+        )}
         {isAdding && (
           <Form
             onCancel={() => {

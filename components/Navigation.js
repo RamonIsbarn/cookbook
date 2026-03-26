@@ -2,10 +2,12 @@ import styled from "styled-components";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Navigation() {
   const [navOpen, setNavOpen] = useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (navOpen) {
@@ -29,6 +31,13 @@ export default function Navigation() {
           </StyledNavListItem>
           <StyledNavListItem>
             <StyledLink href="/recipes">Recipes</StyledLink>
+          </StyledNavListItem>
+          <StyledNavListItem>
+            {session ? (
+              <StyledButton onClick={() => signOut()}>Sign out</StyledButton>
+            ) : (
+              <StyledButton onClick={() => signIn()}>Sign in</StyledButton>
+            )}
           </StyledNavListItem>
         </StyledNavList>
       </StyledNavContainer>
@@ -78,6 +87,16 @@ const StyledLink = styled(Link)`
   text-decoration: none;
   color: #000;
   font-size: 20px;
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+const StyledButton = styled.button`
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  font-family: "Roboto", sans-serif;
   &:hover {
     opacity: 0.8;
   }
