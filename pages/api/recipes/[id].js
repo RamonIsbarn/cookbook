@@ -1,11 +1,17 @@
 import dbConnect from "@/db/connect";
 import Recipe from "@/db/models/Recipe";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(request, response) {
+  const session = await getServerSession(request, response, authOptions);
   await dbConnect();
   const { id } = request.query;
 
   if (request.method === "PUT") {
+    if (!session) {
+      return response.status(401).json({ status: "Not authorized" });
+    }
     try {
       const recipeData = request.body;
       const recipeToUpdate = await Recipe.findByIdAndUpdate(id, recipeData, {
@@ -23,6 +29,9 @@ export default async function handler(request, response) {
     }
   }
   if (request.method === "DELETE") {
+    if (!session) {
+      return response.status(401).json({ status: "Not authorized" });
+    }
     await Recipe.findByIdAndDelete(id);
     response.status(200).json({ status: `Recipe ${id} successfully deleted.` });
     return;

@@ -1,7 +1,10 @@
 import dbConnect from "@/db/connect";
 import Ingredient from "@/db/models/Ingredient";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(request, response) {
+  const session = await getServerSession(request, response, authOptions);
   await dbConnect();
 
   if (request.method === "GET") {
@@ -11,6 +14,9 @@ export default async function handler(request, response) {
 
   if (request.method === "POST") {
     try {
+      if (!session) {
+        return response.status(401).json({ status: "Not authorized" });
+      }
       const ingredientData = request.body;
       await Ingredient.create(ingredientData);
 
