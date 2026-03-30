@@ -58,7 +58,7 @@ export default function RecipesList() {
           ingredients.find(
             (unfilteredIngredient) =>
               unfilteredIngredient._id === recipeIngredient.ingredient
-          ).amount <= recipeIngredient.amount
+          ).amount >= recipeIngredient.amount
       )
     ) {
       return recipe;
