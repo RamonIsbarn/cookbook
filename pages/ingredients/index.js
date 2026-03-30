@@ -105,7 +105,7 @@ export default function IngredientsList() {
             })
           )}
         </IngredientsContainer>
-        {!session && (
+        {session && (
           <StyledAddButton
             onClick={() => {
               setIsAdding(true);

@@ -9,7 +9,7 @@ export default async function handler(request, response) {
   const { id } = request.query;
 
   if (request.method === "PUT") {
-    if (session) {
+    if (!session) {
       return response.status(401).json({ status: "Not authorized" });
     }
     try {

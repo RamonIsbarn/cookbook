@@ -10,7 +10,7 @@ export default async function handler(request, response) {
 
   if (request.method === "PUT") {
     try {
-      if (session) {
+      if (!session) {
         return response.status(401).json({ status: "Not authorized" });
       }
       const ingredientData = request.body;

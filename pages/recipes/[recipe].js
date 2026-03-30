@@ -109,7 +109,7 @@ export default function RecipeDetailPage() {
   return (
     <PageStructure headline={recipe}>
       <RecipeContainer>
-        {!session && (
+        {session && (
           <StyledEditButton
             onClick={() => {
               setIsEditingRecipe(true);
