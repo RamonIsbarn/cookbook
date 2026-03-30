@@ -160,7 +160,7 @@ const StyledOverlay = styled.div`
   opacity: 0.5;
   width: 100vw;
   height: 100vh;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 10;
@@ -193,11 +193,6 @@ const StyledFieldset = styled.fieldset`
 const StyledTextFieldset = styled(StyledFieldset)`
   display: grid;
   grid-template-columns: 1fr 3fr;
-`;
-const StyledDeleteButton = styled(StyledIconButton)`
-  position: absolute;
-  top: 20px;
-  right: 20px;
 `;
 const StyledInput = styled.input`
   border: none;

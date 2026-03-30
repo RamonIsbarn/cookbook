@@ -177,7 +177,7 @@ const StyledOverlay = styled.div`
   opacity: 0.5;
   width: 100vw;
   height: 100vh;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 10;
@@ -204,11 +204,6 @@ const StyledFieldset = styled.fieldset`
   border: none;
   display: block;
   text-align: left;
-`;
-const StyledCancelButton = styled(StyledIconButton)`
-  position: absolute;
-  top: 20px;
-  right: 20px;
 `;
 const StyledTextInput = styled.input`
   width: 100%;
@@ -241,18 +236,6 @@ const StyledButtonContainer = styled.div`
 const StyledButtonContainerCenter = styled(StyledButtonContainer)`
   justify-content: center;
 `;
-const StyledPopUp = styled.div`
-  position: absolute;
-  z-index: 20;
-  background-color: #fff;
-  border-radius: 20px;
-  box-shadow: 0 3px 10px #bbb;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 85vw;
-  padding: 20px;
-  text-align: center;
-`;
 const IngredientTag = styled.div`
   display: flex;
   justify-content: center;
@@ -270,12 +253,6 @@ const StyledTagContainer = styled.div`
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-`;
-const StyledIngredient = styled(StyledIconButton)`
-  font-size: 16px;
-  width: 100%;
-  justify-content: left;
-  padding: 10px;
 `;
 const StyledIngredientContainer = styled.div`
   max-height: 300px;

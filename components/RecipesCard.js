@@ -10,8 +10,8 @@ export default function RecipesCard({ name }) {
 }
 
 const StyledContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  justify-content: left;
   border-radius: 99px;
   padding: 25px;
   box-shadow: 0 3px 10px #bbb;
