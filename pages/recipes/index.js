@@ -72,17 +72,19 @@ export default function RecipesList() {
   return (
     <>
       <PageStructure headline="Recipes">
-        <StyledDialog buttonText={<SlidersHorizontal />} noSubmit>
-          <h3>Filter recipes</h3>
-          <StyledFilterButton
-            onClick={() => {
-              setRecipesFilter(!recipesFilter);
-            }}
-          >
-            {recipesFilter ? <SquareCheck /> : <Square />} Only show available
-            recipes
-          </StyledFilterButton>
-        </StyledDialog>
+        {session && (
+          <StyledDialog buttonText={<SlidersHorizontal />} noSubmit>
+            <h3>Filter recipes</h3>
+            <StyledFilterButton
+              onClick={() => {
+                setRecipesFilter(!recipesFilter);
+              }}
+            >
+              {recipesFilter ? <SquareCheck /> : <Square />} Only show available
+              recipes
+            </StyledFilterButton>
+          </StyledDialog>
+        )}
         <RecipesContainer>
           {filteredRecipes.length === 0 ? (
             <p>No recipes available yet</p>
